@@ -1,0 +1,27 @@
+name: GHCR Write Access Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-ghcr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        run: |
+          echo "${{ secrets.GHCR_TEST_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build test image
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/ghcr-write-test:latest .
+          # or use a dummy file if no Dockerfile exists:
+          # echo "FROM alpine" > TestDockerfile
+          # docker build -t ghcr.io/${{ github.repository_owner }}/ghcr-write-test:latest -f TestDockerfile .
+
+      - name: Push test image
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/ghcr-write-test:latest
